@@ -13,13 +13,24 @@ void on_exit(uv_process_t *req, int64_t exit_status, int term_signal) {
     uv_close((uv_handle_t*) req, NULL);
 }
 
-int main() {
+const char *basename(const char *path)
+{
+    const char *base_name = strchr(path, '/');
+    if (base_name == NULL) {
+        base_name = path;
+    } else {
+        base_name++;
+    }
+    return base_name;
+}
+
+int main(int argc, char *argv[]) {
     loop = uv_default_loop();
 
     size_t size = 500;
     char path[size];
     uv_exepath(path, &size);
-    strcpy(path + (strlen(path) - strlen("proc-streams")), "test");
+    strcpy(path + (strlen(path) - strlen(basename(argv[0]))), "test");
 
     char* args[2];
     args[0] = path;
