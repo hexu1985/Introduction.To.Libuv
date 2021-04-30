@@ -10,12 +10,6 @@ uv_process_options_t options;
 
 const char *g_argv_0 = NULL;
 
-void cleanup_handles(uv_process_t *req, int64_t exit_status, int term_signal) {
-    fprintf(stderr, "Process exited with status %" PRId64 ", signal %d\n", exit_status, term_signal);
-    uv_close((uv_handle_t*) req->data, NULL);
-    uv_close((uv_handle_t*) req, NULL);
-}
-
 const char *basename(const char *path)
 {
     const char *base_name = strchr(path, '/');
@@ -25,6 +19,12 @@ const char *basename(const char *path)
         base_name++;
     }
     return base_name;
+}
+
+void cleanup_handles(uv_process_t *req, int64_t exit_status, int term_signal) {
+    fprintf(stderr, "Process exited with status %" PRId64 ", signal %d\n", exit_status, term_signal);
+    uv_close((uv_handle_t*) req->data, NULL);
+    uv_close((uv_handle_t*) req, NULL);
 }
 
 void invoke_cgi_script(uv_tcp_t *client) {

@@ -18,14 +18,27 @@ int child_worker_count;
 uv_buf_t dummy_buf;
 char worker_path[500];
 
+const char *g_argv_0 = NULL;
+
+const char *basename(const char *path)
+{
+    const char *base_name = strchr(path, '/');
+    if (base_name == NULL) {
+        base_name = path;
+    } else {
+        base_name++;
+    }
+    return base_name;
+}
+
 void close_process_handle(uv_process_t *req, int64_t exit_status, int term_signal) {
     fprintf(stderr, "Process exited with status %" PRId64 ", signal %d\n", exit_status, term_signal);
     uv_close((uv_handle_t*) req, NULL);
 }
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
-  buf->base = malloc(suggested_size);
-  buf->len = suggested_size;
+    buf->base = malloc(suggested_size);
+    buf->len = suggested_size;
 }
 
 void on_new_connection(uv_stream_t *server, int status) {
@@ -42,16 +55,16 @@ void on_new_connection(uv_stream_t *server, int status) {
         struct child_worker *worker = &workers[round_robin_counter];
         uv_write2(write_req, (uv_stream_t*) &worker->pipe, &dummy_buf, 1, (uv_stream_t*) client, NULL);
         round_robin_counter = (round_robin_counter + 1) % child_worker_count;
-      
+
     }
     uv_close((uv_handle_t*) client, NULL);
-    
+
 }
 
 void setup_workers() {
     size_t path_size = 500;
     uv_exepath(worker_path, &path_size);
-    strcpy(worker_path + (strlen(worker_path) - strlen("multi-echo-server")), "worker");
+    strcpy(worker_path + (strlen(worker_path) - strlen(basename(g_argv_0))), "worker");
     fprintf(stderr, "Worker path: %s\n", worker_path);
 
     char* args[2];
@@ -94,7 +107,8 @@ void setup_workers() {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    g_argv_0 = argv[0];
     loop = uv_default_loop();
 
     setup_workers();
