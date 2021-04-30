@@ -8,17 +8,30 @@ uv_loop_t *loop;
 uv_process_t child_req;
 uv_process_options_t options;
 
+const char *g_argv_0 = NULL;
+
 void cleanup_handles(uv_process_t *req, int64_t exit_status, int term_signal) {
     fprintf(stderr, "Process exited with status %" PRId64 ", signal %d\n", exit_status, term_signal);
     uv_close((uv_handle_t*) req->data, NULL);
     uv_close((uv_handle_t*) req, NULL);
 }
 
+const char *basename(const char *path)
+{
+    const char *base_name = strchr(path, '/');
+    if (base_name == NULL) {
+        base_name = path;
+    } else {
+        base_name++;
+    }
+    return base_name;
+}
+
 void invoke_cgi_script(uv_tcp_t *client) {
     size_t size = 500;
     char path[size];
     uv_exepath(path, &size);
-    strcpy(path + (strlen(path) - strlen("cgi")), "tick");
+    strcpy(path + (strlen(path) - strlen(basename(g_argv_0))), "tick");
 
     char* args[2];
     args[0] = path;
@@ -63,7 +76,8 @@ void on_new_connection(uv_stream_t *server, int status) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    g_argv_0 = argv[0];
     loop = uv_default_loop();
 
     uv_tcp_t server;
