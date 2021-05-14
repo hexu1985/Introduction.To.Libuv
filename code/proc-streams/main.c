@@ -15,7 +15,7 @@ void on_exit(uv_process_t *req, int64_t exit_status, int term_signal) {
 
 const char *basename(const char *path)
 {
-    const char *base_name = strchr(path, '/');
+    const char *base_name = strrchr(path, '/');
     if (base_name == NULL) {
         base_name = path;
     } else {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     size_t size = 500;
     char path[size];
     uv_exepath(path, &size);
-    strcpy(path + (strlen(path) - strlen(basename(argv[0]))), "test");
+    strcpy(path + (strlen(path) - strlen(basename(path))), "test");
 
     char* args[2];
     args[0] = path;

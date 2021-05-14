@@ -18,11 +18,9 @@ int child_worker_count;
 uv_buf_t dummy_buf;
 char worker_path[500];
 
-const char *g_argv_0 = NULL;
-
 const char *basename(const char *path)
 {
-    const char *base_name = strchr(path, '/');
+    const char *base_name = strrchr(path, '/');
     if (base_name == NULL) {
         base_name = path;
     } else {
@@ -64,7 +62,7 @@ void on_new_connection(uv_stream_t *server, int status) {
 void setup_workers() {
     size_t path_size = 500;
     uv_exepath(worker_path, &path_size);
-    strcpy(worker_path + (strlen(worker_path) - strlen(basename(g_argv_0))), "worker");
+    strcpy(worker_path + (strlen(worker_path) - strlen(basename(worker_path))), "worker");
     fprintf(stderr, "Worker path: %s\n", worker_path);
 
     char* args[2];
@@ -108,7 +106,6 @@ void setup_workers() {
 }
 
 int main(int argc, char *argv[]) {
-    g_argv_0 = argv[0];
     loop = uv_default_loop();
 
     setup_workers();

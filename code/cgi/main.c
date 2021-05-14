@@ -8,11 +8,9 @@ uv_loop_t *loop;
 uv_process_t child_req;
 uv_process_options_t options;
 
-const char *g_argv_0 = NULL;
-
 const char *basename(const char *path)
 {
-    const char *base_name = strchr(path, '/');
+    const char *base_name = strrchr(path, '/');
     if (base_name == NULL) {
         base_name = path;
     } else {
@@ -31,7 +29,7 @@ void invoke_cgi_script(uv_tcp_t *client) {
     size_t size = 500;
     char path[size];
     uv_exepath(path, &size);
-    strcpy(path + (strlen(path) - strlen(basename(g_argv_0))), "tick");
+    strcpy(path + (strlen(path) - strlen(basename(path))), "tick");
 
     char* args[2];
     args[0] = path;
@@ -77,7 +75,6 @@ void on_new_connection(uv_stream_t *server, int status) {
 }
 
 int main(int argc, char *argv[]) {
-    g_argv_0 = argv[0];
     loop = uv_default_loop();
 
     uv_tcp_t server;
